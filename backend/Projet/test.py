@@ -72,7 +72,8 @@ async def run_pipeline():
         pass
 
     print(f"{'─'*60}")
-    print(f"  SCORE DE COHÉRENCE  : {result['coherence_score']}")
+    print(f"  SCORE DE COHÉRENCE   : {result['coherence_score']}")
+    print(f"  SCORE DE COMPARAISON : {result['comparison_score']}  (vs {result['best_competitor']})")
     print(f"{'─'*60}")
     print("  RAPPORT LLM :")
     print(f"{'─'*60}")
@@ -83,6 +84,12 @@ async def run_pipeline():
         print(json.dumps(report_json, indent=2, ensure_ascii=False))
     except (json.JSONDecodeError, AttributeError):
         print(result["llm_report"])
+
+    if result.get("llms_txt_compressed"):
+        print(f"\n{'─'*60}")
+        print("  LLMS.TXT COMPRESSÉ (Compresr) :")
+        print(f"{'─'*60}")
+        print(result["llms_txt_compressed"])
 
     print(f"\n{'='*60}\n")
 
