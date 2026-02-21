@@ -91,8 +91,8 @@ def export_to_miro(
         # Branche comparaison
         comp_id = create_shape(
             client,
-            f"🏆 Vs leader secteur<br/>{comparison_score:.2f} / 1.0<br/>{best_competitor[:40]}",
-            x=-550, y=50, w=260, h=100, color="#ffe4c9",
+            f"🏆 Vs leader secteur<br/>{comparison_score:.2f} / 1.0<br/>{best_competitor[:80]}",
+            x=-550, y=50, w=280, h=110, color="#ffe4c9",
         )
         create_connector(client, center_id, comp_id)
 
@@ -105,14 +105,14 @@ def export_to_miro(
         create_connector(client, center_id, conseils_id)
 
         # Sous-nœuds conseils
-        y_base = -200
+        y_base = -350
         for i, conseil in enumerate(recommendations[:5]):
             conseil_str = str(conseil) if not isinstance(conseil, str) else conseil
-            ellipsis = "…" if len(conseil_str) > 120 else ""
+            ellipsis = "..." if len(conseil_str) > 500 else ""
             c_id = create_shape(
                 client,
-                f"#{i+1} {conseil_str[:120]}{ellipsis}",
-                x=820, y=y_base + i * 130, w=340, h=110, color="#f0ffc9",
+                f"#{i+1} {conseil_str[:500]}{ellipsis}",
+                x=900, y=y_base + i * 180, w=480, h=160, color="#f0ffc9",
             )
             create_connector(client, conseils_id, c_id)
 

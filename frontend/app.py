@@ -23,6 +23,8 @@ if "audit_data" not in st.session_state:
     st.session_state.audit_data = None
 if "audit_report" not in st.session_state:
     st.session_state.audit_report = None
+if "miro_board_id" not in st.session_state:
+    st.session_state.miro_board_id = ""
 
 # ── Formulaire de lancement ───────────────────────────────────────────────────
 url_input = st.text_input("URL du site à auditer", placeholder="https://example.com")
@@ -138,5 +140,20 @@ if st.session_state.audit_data:
                         best_competitor=data.get("best_competitor", ""),
                     )
                 st.success(msg)
+                # Stocker le board ID dans le state pour l'embed
+                st.session_state.miro_board_id = board_input
             except Exception as e:
                 st.error(f"Erreur Miro : {e}")
+
+        # ── Embed Miro directement dans Streamlit ───────────────────────────
+        embed_board_id = st.session_state.get("miro_board_id", "") or board_input
+        if embed_board_id:
+            # Extraire l'ID brut si c'est une URL
+            raw_id = embed_board_id.strip()
+            if "/board/" in raw_id:
+                raw_id = raw_id.split("/board/")[1].split("/")[0].split("?")[0]
+
+            embed_url = f"https://miro.com/app/live-embed/{raw_id}/?autoplay=yep"
+            st.markdown("**Aperçu du board Miro :**")
+            import streamlit.components.v1 as components
+            components.iframe(embed_url, height=600, scrolling=True)
