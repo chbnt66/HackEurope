@@ -1,0 +1,24 @@
+from fastapi import FastAPI
+from models import UrlWebsite, ExtractedWebPage
+from services.improve_website import ImproveWebsite
+from services.crawl import Crawler
+
+app = FastAPI()
+
+@app.post("/crawl") 
+def web_crawl(data: UrlWebsite):
+    crawler_url = Crawler(data.url)
+    crawl_info_url = crawler_url.extract_pme_data() # 1min
+    return {
+        "message": "Web Crawler",
+        "info_website": crawl_info_url
+    }
+
+@app.post("/suggestion") 
+def suggestion(data: ExtractedWebPage):
+    improve_website = ImproveWebsite(data.extracted_from_url)
+    improvements = improve_website.optimize_seo_with_claude()
+    return {
+        "message": "Suggestion",
+        "company": improvements
+    }
