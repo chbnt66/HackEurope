@@ -197,8 +197,8 @@ FastAPI response → Streamlit / Lovable / Supabase
 | Compression | Compresr |
 | Backend | FastAPI + Uvicorn |
 | Database | Supabase (PostgreSQL) |
-| Frontend (demo) | Streamlit |
-| Frontend (prod) | Lovable (React) |
+| Frontend (for sanity check) | Streamlit |
+| Frontend (prod + demo) | Lovable (React) |
 | Mind maps | Miro REST API + MCP Server |
 | Tunneling | ngrok |
 
