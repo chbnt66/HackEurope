@@ -41,14 +41,14 @@ def root():
 
 def _run_pipeline_in_thread(url: str) -> dict:
     """
-    Exécute la pipeline dans un thread dédié avec son propre ProactorEventLoop.
-    Cela isole Playwright (qui a besoin de ProactorEventLoop pour spawner
-    le navigateur) du loop principal d'uvicorn.
+    Runs the pipeline in a dedicated thread with its own ProactorEventLoop.
+    This isolates Playwright (which needs ProactorEventLoop to spawn
+    the browser) from the main uvicorn loop.
     """
     async def _pipeline():
         site_data = await extract_pme_data(url)
         if not site_data["markdown_content"]:
-            raise ValueError("Impossible de crawler cette URL.")
+            raise ValueError("Unable to crawl this URL.")
         auditor = GEOAuditor()
         try:
             result = await auditor.generate_geo_report(site_data)
@@ -77,8 +77,8 @@ def _run_pipeline_in_thread(url: str) -> dict:
 @app.post("/audit")
 async def run_audit(request: AuditRequest):
     """
-    Lance la pipeline complète dans un thread séparé pour éviter les conflits
-    entre ProactorEventLoop (Playwright) et le loop d'uvicorn.
+    Runs the full pipeline in a separate thread to avoid conflicts
+    between ProactorEventLoop (Playwright) and the uvicorn loop.
     """
     try:
         loop = asyncio.get_event_loop()
@@ -97,13 +97,13 @@ async def run_audit(request: AuditRequest):
 # ── Supabase Webhook endpoint ─────────────────────────────────────────────────
 
 def _process_supabase_audit(audit_id: str, url: str):
-    """Traite un audit déclenché par Supabase webhook et met à jour la ligne."""
+    """Processes an audit triggered by a Supabase webhook and updates the row."""
     if supabase:
         supabase.table("audits").update({"status": "processing"}).eq("id", audit_id).execute()
     try:
         result = _run_pipeline_in_thread(url)
         if supabase:
-            # Parse le score depuis llm_report si possible
+            # Parse score from llm_report if possible
             score = None
             try:
                 import json
@@ -113,7 +113,7 @@ def _process_supabase_audit(audit_id: str, url: str):
                 raw_score = report.get("score")
                 if raw_score is not None:
                     raw_score = float(raw_score)
-                    # score entre 0 et 1 → ramener sur 100
+                    # score between 0 and 1 → bring to 100
                     score = int(raw_score * 100) if raw_score <= 1 else int(raw_score)
             except Exception:
                 pass
@@ -140,8 +140,8 @@ def _process_supabase_audit(audit_id: str, url: str):
 @app.post("/audit/webhook")
 async def supabase_webhook(request: Request):
     """
-    Endpoint appelé par le Database Webhook Supabase lors d'un INSERT
-    dans la table `audits` avec status='pending'.
+    Endpoint called by the Supabase Database Webhook on INSERT
+    into the `audits` table with status='pending'.
     """
     payload = await request.json()
     record = payload.get("record", {})
@@ -149,9 +149,9 @@ async def supabase_webhook(request: Request):
     url = record.get("url")
 
     if not audit_id or not url:
-        raise HTTPException(status_code=400, detail="Champs 'id' et 'url' requis dans le payload.")
+        raise HTTPException(status_code=400, detail="Fields 'id' and 'url' required in the payload.")
 
-    # Lance le traitement en arrière-plan (ne bloque pas la réponse au webhook)
+    # Start processing in the background (does not block the webhook response)
     loop = asyncio.get_event_loop()
     executor = concurrent.futures.ThreadPoolExecutor(max_workers=1)
     loop.run_in_executor(executor, _process_supabase_audit, audit_id, url)
@@ -178,8 +178,8 @@ class MiroExportRequest(BaseModel):
 @app.post("/miro/export")
 def miro_export(request: MiroExportRequest):
     """
-    Exporte la mind map GEO vers un board Miro.
-    Le MIRO_ACCESS_TOKEN est lu depuis le .env côté serveur.
+    Exports the GEO mind map to a Miro board.
+    The MIRO_ACCESS_TOKEN is read from the .env on the server side.
     """
     try:
         msg = _export_to_miro(

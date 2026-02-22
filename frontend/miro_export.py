@@ -1,6 +1,6 @@
 """
-Helper appelé directement depuis Streamlit pour exporter la mind map vers Miro.
-Réplique la logique du MCP server mais de façon synchrone (httpx sync).
+Helper called directly from Streamlit to export the mind map to Miro.
+Replicates the MCP server logic but synchronously (httpx sync).
 """
 import os
 import httpx
@@ -19,10 +19,10 @@ def export_to_miro(
 ) -> str:
     token = os.environ.get("MIRO_ACCESS_TOKEN")
     if not token:
-        raise ValueError("MIRO_ACCESS_TOKEN non défini dans le .env")
+        raise ValueError("MIRO_ACCESS_TOKEN not defined in .env")
 
-    # Extraction robuste de l'ID depuis tout format d'URL Miro
-    # Formats acceptés :
+    # Robust ID extraction from any Miro URL format
+    # Accepted formats:
     #   uXjVxxxx=
     #   https://miro.com/app/board/uXjVxxxx=/
     #   https://miro.com/app/board/uXjVxxxx=/?...
@@ -32,12 +32,12 @@ def export_to_miro(
             raw = raw.split("/board/")[1].split("/")[0].split("?")[0]
         else:
             raise ValueError(
-                "URL Miro invalide. Format attendu : https://miro.com/app/board/uXjVxxxx=/\n"
-                "Copiez l'URL depuis la barre d'adresse de votre board Miro."
+                "Invalid Miro URL. Expected format: https://miro.com/app/board/uXjVxxxx=/\n"
+                "Copy the URL from your Miro board's address bar."
             )
     board_id = raw
     if not board_id:
-        raise ValueError("ID de board Miro vide. Vérifiez l'URL copiée.")
+        raise ValueError("Empty Miro board ID. Check the copied URL.")
 
     headers = {
         "Authorization": f"Bearer {token}",
@@ -73,38 +73,38 @@ def export_to_miro(
         client.post(f"{MIRO_API_URL}/{board_id}/connectors", headers=headers, json=payload)
 
     with httpx.Client(timeout=15) as client:
-        # Nœud central
+        # Central node
         center_id = create_shape(
             client,
-            f"<strong>🌍 {company_name}</strong><br/>Score GEO : {geo_score}/100",
+            f"<strong>🌍 {company_name}</strong><br/>GEO Score: {geo_score}/100",
             x=0, y=0, w=320, h=100, color=center_color, font_size=18,
         )
 
-        # Branche cohérence
+        # Coherence branch
         coh_id = create_shape(
             client,
-            f"📊 Cohérence site ↔ web<br/>{coherence_score:.2f} / 1.0",
+            f"📊 Site ↔ web coherence<br/>{coherence_score:.2f} / 1.0",
             x=-550, y=-150, w=260, h=80, color="#c9f0ff",
         )
         create_connector(client, center_id, coh_id)
 
-        # Branche comparaison
+        # Comparison branch
         comp_id = create_shape(
             client,
-            f"🏆 Vs leader secteur<br/>{comparison_score:.2f} / 1.0<br/>{best_competitor[:80]}",
+            f"🏆 Vs sector leader<br/>{comparison_score:.2f} / 1.0<br/>{best_competitor[:80]}",
             x=-550, y=50, w=280, h=110, color="#ffe4c9",
         )
         create_connector(client, center_id, comp_id)
 
-        # Nœud conseils
+        # Recommendations node
         conseils_id = create_shape(
             client,
-            "💡 Conseils prioritaires",
+            "💡 Priority recommendations",
             x=500, y=0, w=220, h=60, color="#d5f692",
         )
         create_connector(client, center_id, conseils_id)
 
-        # Sous-nœuds conseils
+        # Recommendations sub-nodes
         y_base = -350
         for i, conseil in enumerate(recommendations[:5]):
             conseil_str = str(conseil) if not isinstance(conseil, str) else conseil
@@ -116,4 +116,4 @@ def export_to_miro(
             )
             create_connector(client, conseils_id, c_id)
 
-    return f"✅ Mind map exportée pour '{company_name}' (score {geo_score}/100)"
+    return f"✅ Mind map exported for '{company_name}' (score {geo_score}/100)"

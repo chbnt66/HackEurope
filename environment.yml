@@ -1,0 +1,48 @@
+name: geo_optimizer_hackathon
+channels:
+  - defaults
+  - conda-forge
+dependencies:
+  - python=3.10
+  - pip
+  - numpy
+  - pandas
+  - pip:
+      # AI Frameworks & Orchestration
+      - langchain
+      - langchain-community
+      - langchain-core
+      - langchain-google-genai
+      - sentence-transformers
+      - compresr
+
+      # LLM Providers
+      - google-generativeai
+      - anthropic
+
+      # Web Search
+      - tavily-python
+
+      # Backend & API
+      - fastapi
+      - uvicorn[standard]
+      - pydantic
+      - pydantic-settings
+      - python-dotenv
+
+      # Database
+      - supabase
+
+      # Web Scraping & Crawling
+      - crawl4ai
+      - beautifulsoup4
+      - httpx
+
+      # MCP Server
+      - mcp[cli]
+
+      # Utilities
+      - tiktoken
+
+      # Frontend
+      - streamlit
