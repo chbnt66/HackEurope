@@ -2,8 +2,17 @@ from fastapi import FastAPI
 from models import UrlWebsite, ExtractedWebPage
 from services.improve_website import ImproveWebsite
 from services.crawl import Crawler
+from fastapi.middleware.cors import CORSMiddleware # For Supabase
 
 app = FastAPI()
+
+app.add_middleware(  # Special for SupaBase
+    CORSMiddleware,
+    allow_origins=["*"],  # fine for demo/testing
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 
 @app.post("/crawl") 
 def web_crawl(data: UrlWebsite):
